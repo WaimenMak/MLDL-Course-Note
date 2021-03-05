@@ -1,0 +1,3 @@
+# Algorithmic Training
+
+Coding exercise.
