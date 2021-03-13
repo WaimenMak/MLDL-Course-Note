@@ -1,3 +1,3 @@
 # Algorithmic Training
 
-Coding exercise.
+Data structure and algorithm. Coding exercise.
