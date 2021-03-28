@@ -101,3 +101,75 @@ for epoch in range(iter):
 另外可通过`N-fold validation` 来划分数据集，以防划分方式对模型评估的影响.
 
 <img src="ML Spring 2021.assets/image-20210319123115581.png" alt="image-20210319123115581" style="zoom: 80%;" />
+
+
+
+## Probabilistic Generative Models
+
+logistics与generative model之间的联系，
+
+#### Posterior Probability
+
+#### Logistics regression 和 Linear regression 的对比
+
+
+
+<img src="ML Spring 2021.assets/clip_image001-1616305745646.png" alt="Step 1:  Step 2:  Logistic Regression  Output: between O and 1  Training data: (xn, VI)  j n: 1 for class 1, O for class 2  Linear Regression  fw,b (X) ¯  WiXi + b  Output: any value  Training data: (xn, 911)  9 n: a real number  L(f) = ! -  Cross entropy:  n , = —[jnlnf(xn) + (1 — — f(xn))] " style="zoom:75%;" />
+
+Linear regression的损失函数时`MSE`, Logistics 是`cross entropy`, 最小值都是0，即训练没有误差
+
+```python
+### for SGD
+def sigmoid(x):
+    y = 1/(1+np.exp(x))
+    return y
+
+
+def mini_batch(batch_size, data_X, data_Y):
+    idx = np.arange(0, data_X.shape[0])
+    np.random.shuffle(idx)
+    idx = idx[0:batch_size]
+
+    return data_X[idx,:], data_Y[idx,:]
+
+class logistics_regression():
+
+    def __init__(self,X_train, label):
+        self.X = X_train
+        self.Y = label
+        self.weight1 = np.random.normal(0,0.5,[1,self.X.shape[1]])
+        self.b = np.random.normal(0,0.5,[1,1])
+        self.lr = 0.1
+        self.g_w = np.zeros(self.weight1.shape)
+        self.g_b = np.zeros(self.b.shape)
+        self.loss = 0
+        self.eps = 0.00001
+
+    def train(self):
+        m = self.X.shape[0]
+        for i in range(m):
+            for j in range(5):
+                output = self.forward(self.X[i,:])
+                gw = (output - self.Y[i,:])*self.X[i,:]
+                self.g_w += gw**2
+                self.weight1 = self.weight1 + self.lr * gw/(np.sqrt(self.g_w)+self.eps)
+                # self.weight1 = self.weight1 + self.lr * gw
+                gb = (output - self.Y[i,:])
+                self.g_b += gb**2      #adagrad
+                self.b = self.b + self.lr * gb/(np.sqrt(self.g_b)+self.eps)
+                # self.b = self.b + self.lr * gb
+
+        for j in range(m):
+            self.loss += self.Y[j,:]*np.log(self.forward(self.X[j,:]) + self.eps) + (1 - self.Y[j,:])*np.log(1-self.forward(self.X[j,:]) + self.eps)   
+        self.loss = -self.loss
+
+    def forward(self, x):
+        y_pred = sigmoid(np.dot(self.weight1, x) + self.b)
+        # y_pred = np.dot(self.weight1, x) + np.dot(self.weight2, x**2) + self.b
+        return y_pred 
+```
+
+
+
+#### softmax
+
