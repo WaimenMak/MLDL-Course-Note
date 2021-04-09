@@ -169,7 +169,9 @@ class logistics_regression():
         return y_pred 
 ```
 
+## Loss Function
 
+MSE一般用于回归中的损失函数，cross entropy用于分类。分类中的值在0，1之间，梯度下降更新起来速度会比较慢。cross entropy的本质其实是极大似然估计，让正确类别的的log似然最大化。
 
 #### softmax
 
