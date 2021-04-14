@@ -1,3 +1,4 @@
+
 # coding = utf-8
 import numpy as np
 from Datastructure import Queue
@@ -11,7 +12,7 @@ class Node():
         self.grad = None
         self.sub_grad = None
         self.require_grad = True
-        self.name = None
+        self.need_update = False
 
 class Input(Node):
     def __init__(self, X):
@@ -31,6 +32,7 @@ class Variable(Node):
         super().__init__()
         # self.require_grad = True
         self.value = X
+        self.need_update = True
 
     def output_val(self):
         return self.value
@@ -122,11 +124,26 @@ class F_Norm(Node):
         for i in range(self.last_left.value.shape[0]):
             for j in range(self.last_left.value.shape[1]):
                 sum += self.last_left.value[i,j]**2
-        self.value = sum
+        self.value = sum/self.last_left.value.shape[0]
 
     def compute_gradient(self):
         if self.last_left.require_grad:
             self.last_left.sub_grad = self.last_left.value + self.last_left.value
+
+
+class Sigmoid(Node):
+    def __init__(self, left_node):
+        super().__init__()
+        self.last_left = left_node
+        self.value = self.last_left.value
+        left_node.next = self
+
+    def output_val(self):
+        self.value = 1/(1 + np.exp(-1 * self.last_left.value))
+
+    def compute_gradient(self):
+        if self.last_left.require_grad:
+            self.last_left.sub_grad = np.multiply(1 / (1 + np.exp(-1 * self.last_left.value)),(1 - 1 / (1 + np.exp(-1 * self.last_left.value))))
 
 # class Dense(Node):
 #     def __init__(self, left_node, output_num):
@@ -182,144 +199,74 @@ class F_Norm(Node):
 #     def compute_gradient(self):
 #         self.output
 
-def Dense(left_node, output_num):
-    weight = Variable(np.random.normal(0, 0.1, [left_node.value.shape[1], output_num]))
-    # weight = Variable(np.random.normal(0, 0.1, [left_node.value.shape[1], output_num]))
-    W_x = Dot(left_node, weight)
-    W_x.output_val()
-    output = Add(W_x, Variable(np.random.normal(0, 0.1, (1,W_x.value.shape[1]))))
-    output.output_val()
-
-    return output
-
-
-
-
-
-def Forward(root):
-    '''
-    :param root: the last operater
-    :return: output value 
-    '''
-    if root == None:
-        return root
-
-    Forward(root.last_left)
-    Forward(root.last_right)
-    root.output_val()
-
-    return root
-
-# #breadth-first search
-# def Backprop(root):
-#     '''
-#     :param root:
-#     :return:
-#     '''
-#     if root == None or (root.last_left == None and root.last_right == None):
-#         return
+# def Dense(left_node, output_num):
+#     weight = Variable(np.random.normal(0, 0.1, [left_node.value.shape[1], output_num]))
+#     # weight = Variable(np.random.normal(0, 0.1, [left_node.value.shape[1], output_num]))
+#     W_x = Dot(left_node, weight)
+#     W_x.output_val()
+#     output = Add(W_x, Variable(np.random.normal(0, 0.1, (1,W_x.value.shape[1]))))
+#     output.output_val()
 #
-#     Q = Queue(20, root)
-#     Q.enqueue(root)
+#     return output
 #
-#     while (Q.isEmpty() == False and not Q.isFull()):
-#         size = Q.queueSize()
-#         for i in range(size):
-#             temp = Q.dequeue()
-#             if temp.grad is None:             # if is the first node
-#                 if temp.name == 'Dense':
-#                     temp.grad = temp.weight_bias.T
-#                     temp.compute_gradient()
-#                     if temp.last_left != None and temp.last_left.require_grad:
-#                         temp.last_left.grad = chain_rule(temp.grad, temp.last_left.sub_grad, 'l')
-#                         Q.enqueue(temp.last_left)
-#                 else:
-#                     temp.grad = np.ones(temp.value.shape)
-#                     temp.compute_gradient()
-#                     if temp.last_left != None and temp.last_left.require_grad:
-#                         temp.last_left.grad = temp.last_left.sub_grad
-#                         Q.enqueue(temp.last_left)
-#                     if temp.last_right != None and temp.last_right.require_grad:
-#                         temp.last_right.grad = temp.last_right.sub_grad
-#                         Q.enqueue(temp.last_right)
-#             else:
-#                 temp.compute_gradient()
-#                 if temp.last_left != None and temp.last_left.require_grad:
-#                     temp.last_left.grad = chain_rule(temp.grad, temp.last_left.sub_grad, 'l')
-#                     Q.enqueue(temp.last_left)
-#                 if temp.last_right != None and temp.last_right.require_grad:
-#                     temp.last_right.grad = chain_rule(temp.grad, temp.last_right.sub_grad, 'r')
-#                     Q.enqueue(temp.last_right)
+#
+#
+#
+#
+# def Forward(root):
+#     '''
+#     :param root: the last operater
+#     :return: output value
+#     '''
+#     if root == None:
+#         return root
+#
+#     Forward(root.last_left)
+#     Forward(root.last_right)
+#     root.output_val()
+#
+#     return root
+#
+# # #breadth-first search
+# # def Backprop(root):
+# #     '''
+# #     :param root:
+# #     :return:
+# #     '''
+# #     if root == None or (root.last_left == None and root.last_right == None):
+# #         return
+# #
+# #     Q = Queue(20, root)
+# #     Q.enqueue(root)
+# #
+# #     while (Q.isEmpty() == False and not Q.isFull()):
+# #         size = Q.queueSize()
+# #         for i in range(size):
+# #             temp = Q.dequeue()
+# #             if temp.grad is None:             # if is the first node
+# #                 if temp.name == 'Dense':
+# #                     temp.grad = temp.weight_bias.T
+# #                     temp.compute_gradient()
+# #                     if temp.last_left != None and temp.last_left.require_grad:
+# #                         temp.last_left.grad = chain_rule(temp.grad, temp.last_left.sub_grad, 'l')
+# #                         Q.enqueue(temp.last_left)
+# #                 else:
+# #                     temp.grad = np.ones(temp.value.shape)
+# #                     temp.compute_gradient()
+# #                     if temp.last_left != None and temp.last_left.require_grad:
+# #                         temp.last_left.grad = temp.last_left.sub_grad
+# #                         Q.enqueue(temp.last_left)
+# #                     if temp.last_right != None and temp.last_right.require_grad:
+# #                         temp.last_right.grad = temp.last_right.sub_grad
+# #                         Q.enqueue(temp.last_right)
+# #             else:
+# #                 temp.compute_gradient()
+# #                 if temp.last_left != None and temp.last_left.require_grad:
+# #                     temp.last_left.grad = chain_rule(temp.grad, temp.last_left.sub_grad, 'l')
+# #                     Q.enqueue(temp.last_left)
+# #                 if temp.last_right != None and temp.last_right.require_grad:
+# #                     temp.last_right.grad = chain_rule(temp.grad, temp.last_right.sub_grad, 'r')
+# #                     Q.enqueue(temp.last_right)
+#
 
 
-#breadth-first search
-def Backprop(root):
-    '''
-    :param root:
-    :return:
-    '''
-    if root == None or (root.last_left == None and root.last_right == None):
-        return
-
-    Q = Queue(10, root)
-    Q.enqueue(root)
-
-    while (Q.isEmpty() == False and not Q.isFull()):
-        size = Q.queueSize()
-        for i in range(size):
-            temp = Q.dequeue()
-            if temp.grad is None:             # if is the first node
-                temp.grad = np.ones(temp.value.shape)
-                temp.compute_gradient()
-                if temp.last_left != None and temp.last_left.require_grad:
-                    temp.last_left.grad = temp.last_left.sub_grad
-                    Q.enqueue(temp.last_left)
-                if temp.last_right != None and temp.last_right.require_grad:
-                    temp.last_right.grad = temp.last_right.sub_grad
-                    Q.enqueue(temp.last_right)
-            else:
-                temp.compute_gradient()
-                if temp.last_left != None and temp.last_left.require_grad:
-                    temp.last_left.grad = chain_rule(temp.grad, temp.last_left.sub_grad, 'l')
-                    Q.enqueue(temp.last_left)
-                if temp.last_right != None and temp.last_right.require_grad:
-                    temp.last_right.grad = chain_rule(temp.grad, temp.last_right.sub_grad, 'r')
-                    Q.enqueue(temp.last_right)
-
-
-def chain_rule(par_1, par_2, node):
-    '''
-    :param par_1: gradient dL/dA (matrix)
-    :param par_2: gradient dA/dx
-    :param node: left node or right node (str)
-    :return: dL/dx (matrix)
-    '''
-    if par_1.shape == par_2.shape:
-        return par_1 * par_2
-
-    elif node == 'l':
-        return np.dot(par_1, par_2)
-
-    elif node == 'r':
-        return np.dot(par_2, par_1)
-
-
-
-
-
-
-l1 = Input(np.array([[1,2,1]]))
-# l1.require_grad = False
-l2 = Dense(l1, 4)
-l3 = Dense(l2, 1)
-# w = Variable(np.array([[4,2],[4,2],[4,2]]))
-# l2 = Dot(l1,w)
-# b = Variable(np.array([[1,1],[1,1]]))
-# l3 = Add(l2, b)
-y = Const(np.array([[1]]))
-l4 = Minus(l3, y)
-l5 = F_Norm(l4)
-
-Forward(l5)
-Backprop(l5)
-print(l2.grad)
