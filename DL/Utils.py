@@ -8,11 +8,11 @@ from Datastructure import Queue
 from Nodes import *
 
 def Dense(left_node, output_num):
-    weight = Variable(np.random.normal(0, 0.01, [left_node.value.shape[1], output_num]))
+    weight = Variable(np.random.normal(0, 0.1, [left_node.value.shape[1], output_num]))
     # weight = Variable(np.random.rand(left_node.value.shape[1], output_num))
     W_x = Dot(left_node, weight)
     W_x.output_val()
-    output = Add(W_x, Variable(np.random.normal(0, 0.01, (1, W_x.value.shape[1]))))
+    output = Add(W_x, Variable(np.random.normal(0, 0.1, (1, W_x.value.shape[1]))))
     # output = Add(W_x, Variable(np.random.rand(1, W_x.value.shape[1])))
     output.output_val()
 
@@ -162,20 +162,16 @@ class G_D_Optimizer():
 
     :param param: nodes that need to be updated
     :param root:  the output of the cost function
-    :param x:  the input batch data
-    :para' y:  the label of the batch data
     :return: 
     '''
-    def __init__(self, param, lr, step):
+    def __init__(self, param, lr):
         self.param = param
-        self.lr = lr
-        self.step = step
+        self.lr = lr            #learning rate
 
     def train(self):
-        for stp in range(self.step):
-            for i in range(len(self.param)):
-                if self.param[i].value.shape == self.param[i].grad.shape:
-                    self.param[i].value = self.param[i].value - self.lr * self.param[i].grad
-                else:
-                    self.param[i].value = self.param[i].value - self.lr * sum(self.param[i].grad)  # sum: column-wise
+        for i in range(len(self.param)):
+            if self.param[i].value.shape == self.param[i].grad.shape:
+                self.param[i].value = self.param[i].value - self.lr * self.param[i].grad
+            else:
+                self.param[i].value = self.param[i].value - self.lr * sum(self.param[i].grad)  # sum: column-wise
 

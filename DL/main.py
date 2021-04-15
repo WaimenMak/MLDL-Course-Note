@@ -39,38 +39,44 @@ x_test = excel_to_matrix(datafile, 1)
 y_test = excel_to_matrix(datafile, 2)
 
 
-batch_size = 16
-x_batch, y_batch = mini_batch(batch_size, data_x,data_y)
+batch_size = 32
+x_batch, y_batch = mini_batch(batch_size, data_x, data_y)
 
-# print(x_batch)
 x = Input(x_batch)
-# # l1.require_grad = False
 l2 = Dense(x, 6)
-# l2 = Sigmoid(l2)
+l2 = Sigmoid(l2)
 l3 = Dense(l2, 4)
-# l3 = Sigmoid(l3)
-l4 = Dense(l3, 3)
-# l4 = Sigmoid(l4)
+l3 = Sigmoid(l3)
+l4 = Dense(l3, 4)
+l4 = Sigmoid(l4)
+l5 = Dense(l4, 3)
+l5 = Sigmoid(l5)
 
 
 y = Const(y_batch)
-cost = MSE(l4, y)
+cost = MSE(l5, y)
 
 Forward(cost)
 p = Backprop(cost)
-GD = G_D_Optimizer(p, 0.001, 10)
+GD = G_D_Optimizer(p, 0.01) # lr
 print(cost.value)
-epoch = 160
+epoch = 1000
 for ep in range(epoch):
     x_batch, y_batch = mini_batch(batch_size, data_x,data_y)
     x.value = x_batch
     y.value = y_batch
-    Forward(cost)
-    Backprop(cost)
-    GD.train()
-    print(cost.value)
+    for j in range(20):
+        Forward(cost)
+        Backprop(cost)
+        GD.train()
+    if ep % 100 == 0:
+        print(cost.value)
 #
-x.value = np.array([[5.1,3.4,1.5,0.2]])
-Forward(l4)
+#test = preprocessing.MinMaxScaler().fit_transform(np.array([[5.1,3.4,1.5,0.2]]))
+# x.value = np.array([[5.1,3.4,1.5,0.2]])
+# x.value = test
+x.value = x_test
+Forward(cost)
 # Backprop(cost)
-print(l4.value)
+print(cost.value)
+print(l5.value)
