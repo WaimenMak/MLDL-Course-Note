@@ -13,6 +13,7 @@ class Node():
         self.sub_grad = None
         self.require_grad = True
         self.need_update = False
+        self.BN = False    #to distinct whether is BN or not
 
 class Input(Node):
     def __init__(self, X):
@@ -71,8 +72,10 @@ class Add(Node):
             self.value = temp_val + self.last_left.value
 
     def compute_gradient(self):
-        self.last_left.sub_grad = np.ones(self.last_left.value.shape)    ## 以左边节点大小为准
-        self.last_right.sub_grad = np.ones(self.last_left.value.shape)
+        if self.last_left.require_grad:
+            self.last_left.sub_grad = np.ones(self.last_left.value.shape)    ## 以左边节点大小为准
+        if self.last_right.require_grad:
+            self.last_right.sub_grad = np.ones(self.last_left.value.shape)
 
 
 class Minus(Node):
@@ -86,12 +89,54 @@ class Minus(Node):
     def output_val(self):
         if self.last_left.value.shape == self.last_right.value.shape:
             self.value = self.last_left.value - self.last_right.value
+        elif self.last_left.value.shape[1] == self.last_right.value.shape[1]:      # element-wise
+            temp_val = np.ones(self.last_left.value.shape)
+            for i in range(self.last_left.value.shape[0]):
+                temp_val[i,:] = self.last_right.value[0,:]
+            self.value = temp_val - self.last_left.value
 
     def compute_gradient(self):
         if self.last_left.require_grad:
             self.last_left.sub_grad = np.ones(self.last_left.value.shape)
         if self.last_right.require_grad:
             self.last_right.sub_grad = -1*np.ones(self.last_right.value.shape)
+
+
+class Multiply(Node):
+    def __init__(self, left_node, right_node):
+        super().__init__()
+        self.last_left = left_node
+        self.last_right = right_node
+        left_node.next = self
+        right_node.next = self
+
+    def output_val(self):
+        if self.last_left.value.shape == self.last_right.value.shape:
+            self.value = np.multipy(self.last_left.value, self.last_right.value)
+        elif self.last_left.value.shape[1] == self.last_right.value.shape[1]:      # 加bias的情况
+            temp_val = np.ones(self.last_left.value.shape)
+            for i in range(self.last_left.value.shape[0]):
+                temp_val[i,:] = self.last_right.value[0,:]
+            self.value = np.multiply(temp_val, self.last_left.value)
+
+    def compute_gradient(self):
+        if self.last_left.require_grad:
+            if self.last_left.value.shape[1] == self.last_right.value.shape[1] and self.last_left.value.shape[0] <= self.last_right.value.shape[0]:
+                self.last_left.sub_grad = self.last_right.value
+            elif self.last_left.value.shape[0] > self.last_right.value.shape[0]:   #shape is different, but the 2nd dim equal
+                self.last_left.sub_grad = np.ones(self.last_left.value.shape)
+                for i in range(self.last_left.value.shape[0]):
+                    self.last_left.sub_grad[i,:] = self.last_right.value[0,:]
+
+        if self.last_right.require_grad:
+            if self.last_right.value.shape[1] == self.last_left.value.shape[1] and self.last_right.value.shape[0] <= self.last_left.value.shape[0]:
+                self.last_right.sub_grad = self.last_left.value
+            elif self.last_right.value.shape[0] > self.last_left.value.shape[0]:   #shape is different, but the 2nd dim equal
+                self.last_right.sub_grad = np.ones(self.last_right.value.shape)
+                for i in range(self.last_right.value.shape[0]):
+                    self.last_right.sub_grad[i,:] = self.last_left.value[0,:]
+
+
 
 
 
@@ -112,7 +157,7 @@ class Dot(Node):
         if self.last_right.require_grad:
             self.last_right.sub_grad = self.last_left.value.T
 
-class F_Norm(Node):
+class F_Norm(Node):    #output is a scalar
     def __init__(self, left_node):
         super().__init__()
         self.last_left = left_node
@@ -144,6 +189,20 @@ class Sigmoid(Node):
     def compute_gradient(self):
         if self.last_left.require_grad:
             self.last_left.sub_grad = np.multiply(1 / (1 + np.exp(-1 * self.last_left.value)),(1 - 1 / (1 + np.exp(-1 * self.last_left.value))))
+
+class BN(Node):
+    def __init__(self, left_node):
+        super().__init__()
+        self.last_left = left_node
+        left_node.next = self
+
+    def output_val(self):
+        pass
+
+    def compute_gradient(self):
+        pass
+
+
 
 # class Dense(Node):
 #     def __init__(self, left_node, output_num):

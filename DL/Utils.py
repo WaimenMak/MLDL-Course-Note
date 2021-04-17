@@ -87,7 +87,7 @@ def Backprop(root):
 
     param = []  # record the nodes that need to be updated
 
-    Q = Queue(10, root)
+    Q = Queue(20, root)
     Q.enqueue(root)
 
     while (Q.isEmpty() == False and not Q.isFull()):
@@ -147,11 +147,11 @@ def MSE(output, label):  # Mean Square Error
     return loss
 
 
-def Cross_Entropy(root):  # Cross Entropy
+def Cross_Entropy(output, label):  # Cross Entropy
     '''
 
-    :param root: the final output nodes of the network 
-    :return: 
+    :param output: the final output nodes of the network 
+    :return: loss
     '''
     pass
 
