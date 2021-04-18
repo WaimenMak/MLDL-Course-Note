@@ -112,12 +112,12 @@ class Multiply(Node):
 
     def output_val(self):
         if self.last_left.value.shape == self.last_right.value.shape:
-            self.value = np.multipy(self.last_left.value, self.last_right.value)
+            self.value = np.multiply(self.last_left.value, self.last_right.value)
         elif self.last_left.value.shape[1] == self.last_right.value.shape[1]:      # 加bias的情况
             temp_val = np.ones(self.last_left.value.shape)
             for i in range(self.last_left.value.shape[0]):
                 temp_val[i,:] = self.last_right.value[0,:]
-            self.value = np.multiply(temp_val, self.last_left.value)
+            self.value = np.multiply(temp_val, self.last_left.value)          #can use broadcast here
 
     def compute_gradient(self):
         if self.last_left.require_grad:
@@ -131,7 +131,7 @@ class Multiply(Node):
         if self.last_right.require_grad:
             if self.last_right.value.shape[1] == self.last_left.value.shape[1] and self.last_right.value.shape[0] <= self.last_left.value.shape[0]:
                 self.last_right.sub_grad = self.last_left.value
-            elif self.last_right.value.shape[0] > self.last_left.value.shape[0]:   #shape is different, but the 2nd dim equal
+            elif self.last_right.value.shape[0] > self.last_left.value.shape[0]:   #shape is different, but the 2nd dim equal ,can use tile() here
                 self.last_right.sub_grad = np.ones(self.last_right.value.shape)
                 for i in range(self.last_right.value.shape[0]):
                     self.last_right.sub_grad[i,:] = self.last_left.value[0,:]
@@ -190,17 +190,36 @@ class Sigmoid(Node):
         if self.last_left.require_grad:
             self.last_left.sub_grad = np.multiply(1 / (1 + np.exp(-1 * self.last_left.value)),(1 - 1 / (1 + np.exp(-1 * self.last_left.value))))
 
-class BN(Node):
+
+class BN(Node):      #batch normalization
     def __init__(self, left_node):
         super().__init__()
         self.last_left = left_node
         left_node.next = self
+        self.eps = 1e-10
+        self.momentum = 0.1
+        self.mu = np.zeros([1,self.last_left.value.shape[1]])
+        self.sigma = np.zeros([1, self.last_left.value.shape[1]])
+        self.BN = True
+        self.test = False
 
-    def output_val(self):
-        pass
+    def output_val(self):    # default batch training,so self.last_left.value.shape[0] > 1
+        if self.test == False:
+            x_mean = self.last_left.value.mean(0)
+            x_std = self.last_left.value.std(0)
+            self.mu = (1 - self.momentum)*self.mu + self.momentum * x_mean
+            self.sigma = (1 - self.momentum)*self.sigma + self.momentum * x_std
+            self.value = (self.last_left.value - x_mean)/(x_std + self.eps)       #broadcasting
+        else:
+            self.value = (self.last_left.value - self.mu)/(self.sigma + self.eps)
+            # self.value = self.last_left.value
 
     def compute_gradient(self):
-        pass
+        if self.last_left.require_grad:
+            x_mean = self.last_left.value.mean(0)
+            x_std = self.last_left.value.std(0)
+            self.last_left.sub_grad = (1 - 1/self.last_left.value.shape[0])/ x_std - (self.last_left.value - x_mean)**2/(self.last_left.value.shape[0] * x_std**3)
+
 
 
 

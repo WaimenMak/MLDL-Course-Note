@@ -8,6 +8,7 @@ import numpy as np
 from Nodes import *
 from Utils import *
 import xlrd
+from sklearn import preprocessing
 
 # read data
 def excel_to_matrix(path, num):
@@ -19,8 +20,8 @@ def excel_to_matrix(path, num):
         cols = np.matrix(table.col_values(x))  # 把list转换为矩阵进行矩阵操作
         datamatrix[:, x] = cols  # 按列把数据存进矩阵中
         # 数据归一化
-    #     min_max_scaler = preprocessing.MinMaxScaler()
-    #     datamatrix = min_max_scaler.fit_transform(datamatrix)
+        min_max_scaler = preprocessing.MinMaxScaler()
+        datamatrix = min_max_scaler.fit_transform(datamatrix)
     return datamatrix
 
 def mini_batch(batch_size, data_X, data_Y):
@@ -39,17 +40,18 @@ x_test = excel_to_matrix(datafile, 1)
 y_test = excel_to_matrix(datafile, 2)
 
 
-batch_size = 32
+batch_size = 64
 x_batch, y_batch = mini_batch(batch_size, data_x, data_y)
 
 x = Input(x_batch)
 l2 = Dense(x, 6)
-l2 = Sigmoid(l2)
-l3 = Dense(l2, 4)
-l3 = Sigmoid(l3)
-l4 = Dense(l3, 4)
-l4 = Sigmoid(l4)
-l5 = Dense(l4, 3)
+l2 = batch_normalize(l2)
+# l2 = Sigmoid(l2)
+# l3 = Dense(l2, 4)
+# l3 = Sigmoid(l3)
+# l4 = Dense(l3, 4)
+# l4 = Sigmoid(l4)
+l5 = Dense(l2, 3)
 l5 = Sigmoid(l5)
 
 
@@ -57,8 +59,8 @@ y = Const(y_batch)
 cost = MSE(l5, y)
 
 Forward(cost)
-p = Backprop(cost)
-GD = G_D_Optimizer(p, 0.01) # lr
+p = Train(cost, [])
+GD = G_D_Optimizer(p, 0.05) # lr
 print(cost.value)
 epoch = 1000
 for ep in range(epoch):
@@ -71,10 +73,8 @@ for ep in range(epoch):
         GD.train()
     if ep % 100 == 0:
         print(cost.value)
-#
-#test = preprocessing.MinMaxScaler().fit_transform(np.array([[5.1,3.4,1.5,0.2]]))
-# x.value = np.array([[5.1,3.4,1.5,0.2]])
-# x.value = test
+
+Test(cost)
 x.value = x_test
 Forward(cost)
 # Backprop(cost)

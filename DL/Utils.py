@@ -19,6 +19,23 @@ def Dense(left_node, output_num):
     return output
 
 
+def batch_normalize(left_node):
+    '''
+    :param left_bode: input node
+    :return: ouput node
+    '''
+    gamma = Variable(np.random.normal(0, 0.1, [1, left_node.value.shape[1]]))
+    beta = Variable(np.random.normal(0, 0.1, [1, left_node.value.shape[1]]))
+    bn = BN(left_node)
+    bn.output_val()
+    gamma_x = Multiply(bn, gamma)
+    gamma_x.output_val()
+    output = Add(gamma_x, beta)
+    output.output_val()
+
+    return output
+
+
 def Forward(root):
     '''
     :param root: the last operater
@@ -34,48 +51,6 @@ def Forward(root):
     return root
 
 
-# #breadth-first search
-# def Backprop(root):
-#     '''
-#     :param root:
-#     :return:
-#     '''
-#     if root == None or (root.last_left == None and root.last_right == None):
-#         return
-#
-#     Q = Queue(20, root)
-#     Q.enqueue(root)
-#
-#     while (Q.isEmpty() == False and not Q.isFull()):
-#         size = Q.queueSize()
-#         for i in range(size):
-#             temp = Q.dequeue()
-#             if temp.grad is None:             # if is the first node
-#                 if temp.name == 'Dense':
-#                     temp.grad = temp.weight_bias.T
-#                     temp.compute_gradient()
-#                     if temp.last_left != None and temp.last_left.require_grad:
-#                         temp.last_left.grad = chain_rule(temp.grad, temp.last_left.sub_grad, 'l')
-#                         Q.enqueue(temp.last_left)
-#                 else:
-#                     temp.grad = np.ones(temp.value.shape)
-#                     temp.compute_gradient()
-#                     if temp.last_left != None and temp.last_left.require_grad:
-#                         temp.last_left.grad = temp.last_left.sub_grad
-#                         Q.enqueue(temp.last_left)
-#                     if temp.last_right != None and temp.last_right.require_grad:
-#                         temp.last_right.grad = temp.last_right.sub_grad
-#                         Q.enqueue(temp.last_right)
-#             else:
-#                 temp.compute_gradient()
-#                 if temp.last_left != None and temp.last_left.require_grad:
-#                     temp.last_left.grad = chain_rule(temp.grad, temp.last_left.sub_grad, 'l')
-#                     Q.enqueue(temp.last_left)
-#                 if temp.last_right != None and temp.last_right.require_grad:
-#                     temp.last_right.grad = chain_rule(temp.grad, temp.last_right.sub_grad, 'r')
-#                     Q.enqueue(temp.last_right)
-
-
 # breadth-first search
 def Backprop(root):
     '''
@@ -85,7 +60,7 @@ def Backprop(root):
     if root == None or (root.last_left == None and root.last_right == None):
         return
 
-    param = []  # record the nodes that need to be updated
+    # param = []  # record the nodes that need to be updated
 
     Q = Queue(20, root)
     Q.enqueue(root)
@@ -97,8 +72,8 @@ def Backprop(root):
             if temp.grad is None:  # if is the first node
                 temp.grad = np.ones(temp.value.shape)
                 temp.compute_gradient()
-                if temp.need_update == True:
-                    param.append(temp)
+                # if temp.need_update == True:
+                #     param.append(temp)
                 if temp.last_left != None and temp.last_left.require_grad:
                     temp.last_left.grad = temp.last_left.sub_grad
                     Q.enqueue(temp.last_left)
@@ -107,8 +82,8 @@ def Backprop(root):
                     Q.enqueue(temp.last_right)
             else:
                 temp.compute_gradient()
-                if temp.need_update == True:
-                    param.append(temp)
+                # if temp.need_update == True:
+                #     param.append(temp)
                 if temp.last_left != None and temp.last_left.require_grad:
                     temp.last_left.grad = chain_rule(temp.grad, temp.last_left.sub_grad, 'l')
                     Q.enqueue(temp.last_left)
@@ -116,7 +91,7 @@ def Backprop(root):
                     temp.last_right.grad = chain_rule(temp.grad, temp.last_right.sub_grad, 'r')
                     Q.enqueue(temp.last_right)
 
-    return param
+    return
 
 
 def chain_rule(par_1, par_2, node):
@@ -154,6 +129,38 @@ def Cross_Entropy(output, label):  # Cross Entropy
     :return: loss
     '''
     pass
+
+
+def Train(root, param):
+    '''
+    :param root: 
+    :param param: record the nodes that need to be updated
+    :return: 
+    '''
+    if root == None:
+        return param
+
+    if root.BN == True:
+        root.test = False
+    if root.need_update == True:
+        param.append(root)
+
+    param = Train(root.last_left, param)
+    param = Train(root.last_right, param)
+
+    return param
+
+def Test(root):
+    if root == None:
+        return
+
+    if root.BN == True:
+        root.test = True
+
+    Test(root.last_left)
+    Test(root.last_right)
+
+    return
 
 
 # GradientDescentOptimizer
