@@ -1,5 +1,9 @@
+# -*- coding: utf-8 -*-
+# @Time    : 2021/4/10 18:05
+# @Author  : Weiming Mai
+# @FileName: Utils.py
+# @Software: PyCharm
 
-# coding = utf-8
 import numpy as np
 from Datastructure import Queue
 
@@ -71,6 +75,8 @@ class Add(Node):
                 temp_val[i,:] = self.last_right.value[0,:]
             self.value = temp_val + self.last_left.value
 
+            # self.value = self.last_left.value + self.last_right.value    #broadcast
+
     def compute_gradient(self):
         if self.last_left.require_grad:
             self.last_left.sub_grad = np.ones(self.last_left.value.shape)    ## 以左边节点大小为准
@@ -89,11 +95,13 @@ class Minus(Node):
     def output_val(self):
         if self.last_left.value.shape == self.last_right.value.shape:
             self.value = self.last_left.value - self.last_right.value
-        elif self.last_left.value.shape[1] == self.last_right.value.shape[1]:      # element-wise
+        elif self.last_left.value.shape[1] == self.last_right.value.shape[1]:      # element-wise, can use broadcast
             temp_val = np.ones(self.last_left.value.shape)
             for i in range(self.last_left.value.shape[0]):
                 temp_val[i,:] = self.last_right.value[0,:]
             self.value = temp_val - self.last_left.value
+
+            # self.value = self.last_left.value - self.last_right.value
 
     def compute_gradient(self):
         if self.last_left.require_grad:
@@ -118,6 +126,7 @@ class Multiply(Node):
             for i in range(self.last_left.value.shape[0]):
                 temp_val[i,:] = self.last_right.value[0,:]
             self.value = np.multiply(temp_val, self.last_left.value)          #can use broadcast here
+            # self.value = np.multiply(self.last_left.value, self.last_right.value)    #broadcast
 
     def compute_gradient(self):
         if self.last_left.require_grad:
@@ -218,7 +227,7 @@ class BN(Node):      #batch normalization
         if self.last_left.require_grad:
             x_mean = self.last_left.value.mean(0)
             x_std = self.last_left.value.std(0)
-            self.last_left.sub_grad = (1 - 1/self.last_left.value.shape[0])/ x_std - (self.last_left.value - x_mean)**2/(self.last_left.value.shape[0] * x_std**3)
+            self.last_left.sub_grad = (1 - 1/self.last_left.value.shape[0])/ (x_std) - (self.last_left.value - x_mean)**2/(self.last_left.value.shape[0] * x_std**3)
 
 
 

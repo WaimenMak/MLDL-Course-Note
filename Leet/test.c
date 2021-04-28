@@ -138,7 +138,7 @@ int* inorderTraversal(struct TreeNode* root, int* returnSize){
 
 } 
 
-void main()
+void m()
 {
 	struct TreeNode * inpt[100];
 	int length;
