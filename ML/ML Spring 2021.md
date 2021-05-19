@@ -47,6 +47,35 @@ while not achieve the threshold:
 end while
 ```
 
+```python
+   def train(self):
+        m = self.X.shape[0]
+        # loss = 0
+        gw = 0
+        gb = 0
+
+        for i in range(m):
+            output = self.forward(self.X[i,:])
+            gw += (output - self.Y[i,:])*self.X[i,:]
+
+            # self.weight1 = self.weight1 + self.lr * gw
+            gb += (output - self.Y[i,:])
+
+            # self.b = self.b + self.lr * gb
+
+        self.g_w += gw**2
+        self.weight1 = self.weight1 + self.lr * gw/(np.sqrt(self.g_w)+self.eps)
+
+        self.g_b += gb**2
+        self.b = self.b + self.lr * gb/(np.sqrt(self.g_b)+self.eps)
+
+        for j in range(m):
+            self.loss += self.Y[j,:]*np.log(self.forward(self.X[j,:]) + self.eps) + (1 - self.Y[j,:])*np.log(1 - self.forward(self.X[j,:]) + self.eps)   
+        self.loss = -self.loss
+```
+
+
+
 ### SGD
 
 首先分清`Batch`, 和`mini batch`和`SGD`，使用整个训练集计算累积梯度并进行梯度下降的方法是Batch或`确定性`梯度算法，每次选取一个样本更新的叫stochastic或`在线`算法。`mini batch`是介于上述两种的，每次学一小笔data，但不是全部data。
