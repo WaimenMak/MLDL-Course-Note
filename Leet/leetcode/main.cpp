@@ -48,12 +48,32 @@ public:
 
 };
 
+class myclass {
+public:
+    myclass(char* name) {
+        myname = new char[5];
+        p = myname;
+        while (*name != '\0') {
+            *myname = *name;
+            ++name;
+            ++myname;
+        }
+    }
+    char* myname;
+    char* p;
+};
+
+
 int main() {
-    vector<int> in = {9,3,15,20,7};
+ /*   vector<int> in = {9,3,15,20,7};
     vector<int> po = { 9,15,7,20,3};
     Solution s;
-    TreeNode * p = s.buildTree(in, po);
+    TreeNode * p = s.buildTree(in, po);*/
 
+
+    char m[] = "12345" ;
+    myclass m1(m);
+    cout << m1.p;
     return 0;
 }
 

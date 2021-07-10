@@ -204,3 +204,5 @@ MSE一般用于回归中的损失函数，cross entropy用于分类。分类中�
 
 #### softmax
 
+## Deep Learning Part
+
