@@ -150,3 +150,82 @@ public:
 };
 ```
 
+此题二维数组动规方法非常简单，但是题目要求空间复杂度，因此只能用一维数组。
+
+### 整数拆分
+
+给定一个正整数 n，将其拆分为至少两个正整数的和，并使这些整数的乘积最大化。 返回你可以获得的最大乘积。
+
+示例 1:
+
+输入: 2
+输出: 1
+解释: 2 = 1 + 1, 1 × 1 = 1。
+示例 2:
+
+输入: 10
+输出: 36
+解释: 10 = 3 + 3 + 4, 3 × 3 × 4 = 36。
+说明: 你可以假设 n 不小于 2 且不大于 58。
+
+自己写答案：
+
+```C++
+class Solution {
+public:
+    int integerBreak(int n) {
+        int dp[n],A,B,m,temp;
+        dp[0] = 1;
+        int max_num = 0;
+        for (int j = 1; j < n; j++){
+  
+            for (int i = 0; i < (j+1 - 1); i++){
+                A = max(dp[i] * (j-i), (i+1) * dp[j - i - 1]);
+                B = max((i+1) * (j-i), dp[i] * dp[j - i - 1]);
+                temp = max(A, B);
+                if (temp > max_num) {
+                    max_num = temp;
+                }
+            }
+			dp[j] = max_num;
+        }
+
+        return dp[n - 1];
+    }
+
+    
+};
+```
+
+主要思路：
+
+![interger](动态规划.assets/interger.png)
+
+
+
+如上图所示，当 n = 5时，我们可以遍历`ceil(n-1/ 2)` 次，拆分的方式我分了四种，但是后来发现`dp[i]*dp[n-i]` 是多余的，这个暂时还不太清楚为什么，dp数组初始化`dp[1] = 1`, 后续逐个算出。改进后代码：四种拆分方法变为两种，遍历n-1次。
+
+```C
+class Solution {
+public:
+    int integerBreak(int n) {
+        int dp[n];
+        dp[0] = 1;
+        int temp = 0;
+        for (int j = 1; j < n; j++){
+  
+            for (int i = 0; i < (j+1 - 1); i++){
+
+                temp = max(temp, max(dp[i] * (j-i), (i+1) * (j-i)));
+
+            }
+			dp[j] = temp;
+        }
+
+        return dp[n - 1];
+    }
+
+    
+};
+```
+
