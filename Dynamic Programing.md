@@ -1,3 +1,90 @@
+# 回溯
+
+### 组合问题
+
+给定两个整数 n 和 k，返回范围 [1, n] 中所有可能的 k 个数的组合。
+
+你可以按 任何顺序 返回答案。
+
+ 
+
+示例 1：
+
+输入：n = 4, k = 2
+输出：
+[
+  [2,4],
+  [3,4],
+  [2,3],
+  [1,2],
+  [1,3],
+  [1,4],
+]
+示例 2：
+
+输入：n = 1, k = 1
+输出：[[1]]
+
+
+提示：
+
+1 <= n <= 20
+1 <= k <= n
+
+自己写代码：
+
+```cpp
+class Solution {
+private:
+    void backtrack(int m, int & n, int k, vector<int> &vec, vector<vector<int>> &total_vec){
+        if (k == 0){
+            total_vec.push_back(vec);
+            // vec.pop_back();
+            return ;
+        }
+        for (int i = m; i<= n; i++){
+            vec.push_back(i);
+            backtrack(i + 1, n, k - 1, vec, total_vec);
+            vec.pop_back();
+        }
+
+    }
+public:
+    vector<vector<int>> combine(int n, int k) {
+        vector<vector<int>> vec1;
+        vector<int> vec2;
+        backtrack(1, n, k, vec2, vec1);
+        return vec1;
+    }
+
+};
+```
+
+注意一些小细节，传参`vec`要用引用，否则占用内存很大，而且消耗时间长，或者不用传参，直接设置为全局变量。
+
+思路：其实就是穷举+剪枝
+
+模板伪代码：
+
+```
+void backtracking(参数) {
+    if (终止条件) {
+        存放结果;
+        return;
+    }
+
+    for (选择：本层集合中元素（树中节点孩子的数量就是集合的大小）) {
+        处理节点;
+        backtracking(路径，选择列表); // 递归
+        回溯，撤销处理结果
+    }
+}
+```
+
+![combine](Dynamic Programing.assets/combine-1626757403956.png)
+
+交叉为剪枝，每次遍历的集合是上一个集合减去已遍历元素的子集。
+
 # 动态规划
 
 ### 股票买卖问题（含手续费）
