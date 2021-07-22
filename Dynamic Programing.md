@@ -116,9 +116,7 @@ int maxProfit(int* prices, int pricesSize, int fee){
 
 ### 所有路径
 
-
-
-![image-20210616113054458](动态规划.assets/image-20210616113054458.png)
+![](Dynamic Programing.assets/image-20210616113054458.png)
 
 有三种解法，深搜，动规，和数论。
 
@@ -286,7 +284,7 @@ public:
 
 主要思路：
 
-![interger](动态规划.assets/interger.png)
+![](Dynamic Programing.assets/interger.png)
 
 
 
