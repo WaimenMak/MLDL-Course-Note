@@ -716,7 +716,7 @@ public:
 改进如下：
 
 ```C++
-lass Solution {
+class Solution {
 private:
     // 在左闭右开区间[left, right)，构造二叉树
     TreeNode* traversal(vector<int>& nums, int left, int right) {

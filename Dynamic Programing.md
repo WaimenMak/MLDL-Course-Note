@@ -85,6 +85,58 @@ void backtracking(参数) {
 
 交叉为剪枝，每次遍历的集合是上一个集合减去已遍历元素的子集。
 
+### 字母组合
+
+给定一个仅包含数字 2-9 的字符串，返回所有它能表示的字母组合。答案可以按 任意顺序 返回。
+
+给出数字到字母的映射如下（与电话按键相同）。注意 1 不对应任何字母。
+
+
+
+示例 1：
+
+输入：digits = "23"
+输出：["ad","ae","af","bd","be","bf","cd","ce","cf"]
+示例 2：
+
+输入：digits = ""
+输出：[]
+示例 3：
+
+输入：digits = "2"
+输出：["a","b","c"]
+链接：https://leetcode-cn.com/problems/letter-combinations-of-a-phone-number
+
+```cpp
+class Solution {
+private:
+    const string letterMap[10] = {"", " ", "abc", "def", "ghi", "jkl", "mno", "pqrs","tuv","wxyz"};
+    vector<string> vec;
+    string s;
+    void backtrack(int k, int size, int & total_size, string & digits){
+        if (k == total_size){
+            vec.push_back(s);
+            return;
+        }
+        char num = digits[k];
+        for (int i = 0; i < size; i++){
+            s.push_back(letterMap[num - '0'][i]);
+            backtrack(k + 1, letterMap[digits[k + 1] - '0'].size(), total_size, digits);
+            s.pop_back();
+        }
+
+    }
+public:
+    vector<string> letterCombinations(string digits) {
+        int total_size = digits.size();
+        backtrack(0, letterMap[digits[0] - '0'].size(), total_size, digits);
+        return vec;
+    }
+};
+```
+
+
+
 # 动态规划
 
 ### 股票买卖问题（含手续费）
