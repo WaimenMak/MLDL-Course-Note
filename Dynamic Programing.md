@@ -366,3 +366,58 @@ public:
 };
 ```
 
+### 二叉搜索树结构
+
+给你一个整数 n ，求恰由 n 个节点组成且节点值从 1 到 n 互不相同的 二叉搜索树 有多少种？返回满足题意的二叉搜索树的种数。
+
+ 
+
+示例 1：
+
+
+输入：n = 3
+输出：5
+示例 2：
+
+输入：n = 1
+输出：1
+
+
+提示：
+
+1 <= n <= 19
+链接：https://leetcode-cn.com/problems/unique-binary-search-trees
+
+此题刚上手时会很蒙，但是仔细分析后会发现二叉树结构数目和子序列无关，即（2，3，4）与（1，2，3）的二叉搜索树结构数目是一样的。无须理会数值差异
+
+```c
+class Solution {
+private:
+    int cal(int left, int right, int current, vector<int>& dp){
+        return dp[current - left] * dp[right - current];
+    }
+public:
+    int numTrees(int n) {
+        vector<int> dp(n+1, 0);
+
+        int i,temp;
+        dp[0] = 1;
+        dp[1] = 1;
+        for (i = 2;i <= n; i++){
+            for (int j = 1; j <= i;j++){
+                temp = cal(1, i, j, dp);
+                dp[i] += temp;
+            }
+
+        }
+        return dp[n];
+
+    }
+};
+```
+
+刚开始没有好好地找规律，导致陷入枚举的困境，枚举又不知道该怎么写，后来还是先确定好初始条件，然后确定递推方程。
+
+<img src="Dynamic Programing.assets/searchTree.png"  />
+
+把以每个节点为头节点的情况都加起来，dp[0] =1,dp[1] = 1.
