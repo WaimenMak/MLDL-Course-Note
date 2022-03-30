@@ -121,9 +121,21 @@ for epoch in range(iter):
 
 ## Model Selection
 
+### Generalization error
+
+If the model perform well in the unseen data set i.e the test set, the model's generalization error is good.
+
+![image-20211029190347741](ML Spring 2021.assets/image-20211029190347741.png)
+
+![image-20211029190434292](ML Spring 2021.assets/image-20211029190434292.png)
+
+![](ML Spring 2021.assets/image-20211029185912663.png)
+
+
+
 ### Variance versus Bias
 
-`Variance` 反应的是模型在训练集上的`performance`，`bias`反应在训练集上的`performance`。若在训练集上训练误差很低则bias小，属于`underfitting`，`testing set`上误差高则`variance`大，泛化性能低。
+`Variance` 反应的是模型在测试集上的`performance`，`bias`反应在训练集上的`performance`。若在训练集上训练误差很低则bias小，属于`underfitting`，`testing set`上误差高则`variance`大，泛化性能低。
 
 `Testing data`不会用来调整模型。而作为最终的对模型性能的评价,因此需将训练数据分成验证集与训练集，验证集（`validation`）上的performance可以当作指标去改进模型，或有多个模型时选择最好那个。
 
@@ -205,4 +217,14 @@ MSE一般用于回归中的损失函数，cross entropy用于分类。分类中�
 #### softmax
 
 ## Deep Learning Part
+
+### RNN
+
+
+
+## Few shot/ one shot
+
+[Few-Shot Learning (2/3): Siamese Network (孪生网络)_哔哩哔哩_bilibili](https://www.bilibili.com/video/BV1vQ4y1R7dr/?spm_id_from=trigger_reload)
+
+
 
