@@ -139,7 +139,7 @@ If the model perform well in the unseen data set i.e the test set, the model's g
 
 `Testing data`不会用来调整模型。而作为最终的对模型性能的评价,因此需将训练数据分成验证集与训练集，验证集（`validation`）上的performance可以当作指标去改进模型，或有多个模型时选择最好那个。
 
-另外可通过`N-fold validation` 来划分数据集，以防划分方式对模型评估的影响.
+另外可通过`N-fold validation` 来划分数据集，以防划分方式对模型评估的影响. 
 
 <img src="ML Spring 2021.assets/image-20210319123115581.png" alt="image-20210319123115581" style="zoom: 80%;" />
 
